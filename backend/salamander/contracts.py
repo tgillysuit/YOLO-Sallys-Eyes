@@ -11,12 +11,15 @@ Rules:
 from __future__ import annotations
 
 from datetime import datetime
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 __all__ = [
     "CONTRACT_VERSION",
+    "State",
+    "Event",
     "VersionedContract",
     "Bbox",
     "Center",
@@ -34,6 +37,28 @@ __all__ = [
 ]
 
 CONTRACT_VERSION = "salamander.tracking.v1"
+
+
+class State(str, Enum):
+    CREATED = "CREATED"
+    QUEUED = "QUEUED"
+    INITIALIZING = "INITIALIZING"
+    TRACKING = "TRACKING"
+    COMPUTING = "COMPUTING"
+    RENDERING = "RENDERING"
+    COMPLETE = "COMPLETE"
+    FAILED = "FAILED"
+
+
+class Event(str, Enum):
+    SUBMIT_JOB = "SUBMIT_JOB"
+    START_PROCESSING = "START_PROCESSING"
+    READY_TO_TRACK = "READY_TO_TRACK"
+    FRAME_PROCESSED = "FRAME_PROCESSED"
+    TRACKING_COMPLETE = "TRACKING_COMPLETE"
+    METRICS_COMPLETE = "METRICS_COMPLETE"
+    ARTIFACTS_WRITTEN = "ARTIFACTS_WRITTEN"
+    ERROR = "ERROR"
 
 
 class VersionedContract(BaseModel):
@@ -159,7 +184,7 @@ class JobRequest(VersionedContract):
 class JobStatus(BaseModel):
     """Current lifecycle state of a job (no progress detail)."""
     job_id: str
-    state: str
+    state: State
     created_at: datetime
     updated_at: datetime
 
@@ -167,7 +192,7 @@ class JobStatus(BaseModel):
 class JobProgress(BaseModel):
     """Live progress snapshot while a job is in TRACKING or RENDERING."""
     job_id: str
-    state: str
+    state: State
     current_frame: int = Field(..., ge=0)
     total_frames: int = Field(..., ge=1)
     percent: float = Field(..., ge=0.0, le=100.0)

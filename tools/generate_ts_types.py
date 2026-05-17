@@ -10,6 +10,7 @@ from __future__ import annotations
 import sys
 import types
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Literal, Union, get_args, get_origin, get_type_hints
 
@@ -84,6 +85,8 @@ def py_type_to_ts(hint) -> str:
         return "number"
     if hint is bool:
         return "boolean"
+    if isinstance(hint, type) and issubclass(hint, Enum):
+        return " | ".join(f'"{member.value}"' for member in hint)
     if isinstance(hint, type) and issubclass(hint, BaseModel):
         return hint.__name__
 

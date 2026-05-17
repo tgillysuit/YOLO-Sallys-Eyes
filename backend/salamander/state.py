@@ -8,36 +8,17 @@ the runtime context passed to every transition function.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Any, Callable
 
-from .contracts import FrameRecord, JobRequest, JobStatus, ProcessingMetadata, TrackSummary
-
-
-# ---------------------------------------------------------------------------
-# State and Event enumerations
-# ---------------------------------------------------------------------------
-
-class State(str, Enum):
-    CREATED = "CREATED"
-    QUEUED = "QUEUED"
-    INITIALIZING = "INITIALIZING"
-    TRACKING = "TRACKING"
-    COMPUTING = "COMPUTING"
-    RENDERING = "RENDERING"
-    COMPLETE = "COMPLETE"
-    FAILED = "FAILED"
-
-
-class Event(str, Enum):
-    SUBMIT_JOB = "SUBMIT_JOB"
-    START_PROCESSING = "START_PROCESSING"
-    READY_TO_TRACK = "READY_TO_TRACK"
-    FRAME_PROCESSED = "FRAME_PROCESSED"
-    TRACKING_COMPLETE = "TRACKING_COMPLETE"
-    METRICS_COMPLETE = "METRICS_COMPLETE"
-    ARTIFACTS_WRITTEN = "ARTIFACTS_WRITTEN"
-    ERROR = "ERROR"
+from .contracts import (
+    Event,
+    FrameRecord,
+    JobRequest,
+    JobStatus,
+    ProcessingMetadata,
+    State,
+    TrackSummary,
+)
 
 
 # ---------------------------------------------------------------------------
