@@ -1,0 +1,12 @@
+{
+  "video_id": "ensatina_short",
+  "model_path": "yolo11n.pt",
+  "sample_stride": 2,
+  "confidence_threshold": 0.25,
+  "iou_threshold": 0.7,
+  "device": "cpu",
+  "processed_frames": 360,
+  "total_frames": 720,
+  "duration_s": 30.0,
+  "fps": 24.0
+}

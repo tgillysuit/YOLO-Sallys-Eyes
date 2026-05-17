@@ -1,0 +1,8 @@
+{
+  "contract_version": "salamander.tracking.v1",
+  "video_id": "ensatina_short",
+  "device": "cpu",
+  "sample_stride": 2,
+  "confidence_threshold": 0.25,
+  "iou_threshold": 0.7
+}

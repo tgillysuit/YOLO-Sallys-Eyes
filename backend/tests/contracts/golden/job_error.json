@@ -1,0 +1,6 @@
+{
+  "job_id": "job-abc123",
+  "error_message": "Video file not found",
+  "error_type": "FileNotFoundError",
+  "traceback": null
+}

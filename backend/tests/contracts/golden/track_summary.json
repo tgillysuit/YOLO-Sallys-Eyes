@@ -1,0 +1,8 @@
+{
+  "track_id": 3,
+  "total_distance_px": 86.26,
+  "frame_indices": [42, 44, 46, 48],
+  "first_seen": 42,
+  "last_seen": 48,
+  "detection_count": 4
+}

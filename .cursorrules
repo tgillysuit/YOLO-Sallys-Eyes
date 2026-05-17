@@ -1,0 +1,50 @@
+# Salamander AI Tracking System — Cursor Rules
+
+## Architecture
+This project follows a state-machine + module-contract architecture documented in `docs/state-machine.md` and `docs/contracts/`. Every backend operation is implemented as a transition in `backend/salamander/transitions.py`. Every module boundary has a contract in `docs/contracts/modules/`.
+
+## Non-Negotiable Rules
+
+1. **Contracts are the source of truth.** `backend/salamander/contracts.py` defines all data shapes. `frontend/lib/contracts.ts` is GENERATED from it via `pydantic2ts` — never edit `contracts.ts` by hand.
+
+2. **Transitions follow the six-field spec format.** Every transition function in `transitions.py` MUST have a docstring with these fields, in this order: From/To, Trigger, Reads, Writes, May call, Must NOT call, Postcondition, Errors.
+
+3. **Module ownership is strict.** A module owns specific calculations and must NOT perform calculations owned by other modules. Specifically:
+   - `metrics.py` is the ONLY place that computes `center` and `total_distance_pixels`
+   - `vision.normalization` is the ONLY place that filters by confidence
+   - `vision.yolo_tracking` is the ONLY place that calls YOLO
+   - `storage.py` is the ONLY place that does filesystem I/O for artifacts
+   - The frontend NEVER recomputes any backend metric
+
+4. **Temporal contracts.** Every module declares which state(s) it is reachable from. Calling a module from outside its allowed states is a contract violation. Check the module docstring before adding a call site.
+
+5. **Pure functions in metrics.py.** `metrics.py` performs NO I/O. No file reads, no file writes, no network, no print statements except for explicit debug helpers.
+
+6. **All API responses include `contract_version`.** Hard-coded as `"salamander.tracking.v1"`. Never omit.
+
+7. **Use Pydantic models for all data crossing boundaries.** Never pass raw dicts between modules.
+
+8. **v1 metrics are live coordinates and total distance ONLY.** Region grid and dwell time are explicitly v1.1. Do not add region or dwell logic to v1 code.
+
+## Code Style
+
+- Python: type hints everywhere, ruff + black formatting, no `Any` types in contract code
+- TypeScript: strict mode, no `any`, prefer the generated `contracts.ts` types over inline types
+- Tests: one transition test per file in `tests/transitions/`, named `test_<transition_name>.py`
+
+## When Generating Code
+
+- If implementing a transition, copy its six-field spec from `docs/state-machine.md` into the docstring before writing the body
+- If editing a module, re-read the module's contract in `docs/contracts/modules/` before changing behavior
+- If you would call a function across module boundaries, verify the temporal contract allows it
+- If a test fails, do NOT change the test to match the implementation; verify the implementation against the spec first
+
+## Forbidden Patterns
+
+- Hand-editing `frontend/lib/contracts.ts`
+- Computing `center`, `region`, or `total_distance` outside `metrics.py`
+- Filesystem I/O outside `storage.py`
+- YOLO calls outside `vision/yolo_tracking.py`
+- Adding new states or transitions without updating `docs/state-machine.md`
+- `localStorage` or `sessionStorage` in artifacts (not supported in this environment)
+- Adding region or dwell-time fields to v1 contracts

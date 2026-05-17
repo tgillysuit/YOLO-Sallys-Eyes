@@ -1,0 +1,15 @@
+{
+  "contract_version": "salamander.tracking.v1",
+  "frame_index": 42,
+  "timestamp_s": 1.75,
+  "detections": [
+    {
+      "track_id": 3,
+      "bbox": {"x1": 12.5, "y1": 34.0, "x2": 160.0, "y2": 210.5},
+      "center": {"x": 86.25, "y": 122.25},
+      "confidence": 0.87,
+      "class_name": "salamander",
+      "frame_index": 42
+    }
+  ]
+}

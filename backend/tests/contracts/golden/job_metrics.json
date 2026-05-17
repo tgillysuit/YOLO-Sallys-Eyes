@@ -1,0 +1,46 @@
+{
+  "contract_version": "salamander.tracking.v1",
+  "video_id": "ensatina_short",
+  "frame_records": [
+    {
+      "contract_version": "salamander.tracking.v1",
+      "frame_index": 42,
+      "timestamp_s": 1.75,
+      "detections": [
+        {
+          "track_id": 3,
+          "bbox": {"x1": 12.5, "y1": 34.0, "x2": 160.0, "y2": 210.5},
+          "center": {"x": 86.25, "y": 122.25},
+          "confidence": 0.87,
+          "class_name": "salamander",
+          "frame_index": 42
+        }
+      ]
+    }
+  ],
+  "track_summaries": [
+    {
+      "track_id": 3,
+      "total_distance_px": 86.26,
+      "frame_indices": [42, 44, 46, 48],
+      "first_seen": 42,
+      "last_seen": 48,
+      "detection_count": 4
+    }
+  ],
+  "processing_metadata": {
+    "video_id": "ensatina_short",
+    "model_path": "yolo11n.pt",
+    "sample_stride": 2,
+    "confidence_threshold": 0.25,
+    "iou_threshold": 0.7,
+    "device": "cpu",
+    "processed_frames": 360,
+    "total_frames": 720,
+    "duration_s": 30.0,
+    "fps": 24.0
+  },
+  "metrics_warnings": {
+    "warnings": []
+  }
+}
