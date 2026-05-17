@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable
 
-from .contracts import FrameRecord, JobRequest, ProcessingMetadata, TrackSummary
+from .contracts import FrameRecord, JobRequest, JobStatus, ProcessingMetadata, TrackSummary
 
 
 # ---------------------------------------------------------------------------
@@ -64,9 +64,16 @@ def register_transition(state: State, event: Event) -> Callable:
 
 @dataclass
 class Context:
-    """Mutable runtime bag passed through every transition."""
+    """Mutable runtime bag passed through every transition.
+
+    Transitions read ctx.status to validate they were called in the right
+    state, then mutate ctx.status to record progress, timestamps, errors, etc.
+    The dispatcher returns (new_state, side_effects); callers read ctx.status
+    for the full updated JobStatus after firing.
+    """
     job_id: str
     job_request: JobRequest
+    status: JobStatus                    # required — callers set starting state explicitly
     model: Any = None                    # loaded YOLO model handle
     frame_reader: Any = None             # open cv2.VideoCapture
     frame_records: list[FrameRecord] = field(default_factory=list)
@@ -96,6 +103,37 @@ class OpenFrameReaderSideEffect(SideEffect):
 
 @dataclass
 class WriteManifestSideEffect(SideEffect):
+    output_path: str
+
+
+@dataclass
+class WriteFramesJsonSideEffect(SideEffect):
+    output_path: str
+    frame_records: list  # list[FrameRecord], untyped to avoid import cycles
+
+
+@dataclass
+class WriteSummaryJsonSideEffect(SideEffect):
+    output_path: str
+    job_metrics: Any  # JobMetrics
+
+
+@dataclass
+class WriteCsvSideEffect(SideEffect):
+    output_path: str
+    frame_records: list
+
+
+@dataclass
+class RenderAnnotatedVideoSideEffect(SideEffect):
+    input_video_path: str
+    output_video_path: str
+    frame_records: list
+
+
+@dataclass
+class FfmpegEncodeSideEffect(SideEffect):
+    input_path: str
     output_path: str
 
 
