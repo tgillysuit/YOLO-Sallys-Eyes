@@ -22,7 +22,9 @@
       "Bash(/c/Python312/python.exe *)",
       "Bash(mkdir -p /c/Users/dev-t/Desktop/School/2026/378/Projects/YOLO-Sallys-Eyes/backend/salamander)",
       "Bash(mkdir -p /c/Users/dev-t/Desktop/School/2026/378/Projects/YOLO-Sallys-Eyes/backend/tests/contracts/golden)",
-      "Bash(mkdir -p /c/Users/dev-t/Desktop/School/2026/378/Projects/YOLO-Sallys-Eyes/frontend/lib)"
+      "Bash(mkdir -p /c/Users/dev-t/Desktop/School/2026/378/Projects/YOLO-Sallys-Eyes/frontend/lib)",
+      "Bash(git mv *)",
+      "Bash(git rm *)"
     ],
     "deny": [],
     "ask": []

@@ -1,3 +1,4 @@
 {
-  "warnings": ["Low confidence detections in frames 100-120"]
+  "skipped_jumps": 2,
+  "dropped_low_confidence": 15
 }

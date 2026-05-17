@@ -7,6 +7,41 @@ Building a YOLO-based salamander detection and tracking system.
 
 ---
 
+## Day 5 Pre-Flight Cleanup ✅
+
+### Task Status
+
+| Task | Status | Notes |
+|------|--------|-------|
+| 1. Filename fix (`ensantina` → `ensatina`) | DONE | `git mv` used; `PROJECT_STATUS.md` updated; `spike.py` was already correct |
+| 2. `.gitignore` created | DONE | 29-line file with weights, spike artifacts, Python, Node, IDE, OS, training-data sections |
+| 3. Untrack `yolo11n.pt` | DONE | `git rm --cached yolo11n.pt` succeeded |
+| 4. Move spike output to docs | DONE | `spike_output.mp4` → `docs/screenshots/spike_pretrained_baseline.mp4`; `spike_output_raw.mp4` removed |
+| 5. Contract tests | DONE | **85 passed, 0 failed** |
+| 6. Transitions state inspection | DONE | See below |
+
+### Transitions State (Task 6)
+
+| Check | Result |
+|-------|--------|
+| `backend/salamander/transitions.py` | **MISSING** — not yet created |
+| `backend/tests/transitions/` | **MISSING** — not yet created |
+| `TRANSITION_TABLE` entries | **0 registered** — empty dict as designed |
+
+`transitions.py` has not been started. The state machine spine (`State`, `Event`, `TRANSITION_TABLE`, `fire()`, `register_transition`) is fully wired in `state.py` and ready to receive transition implementations.
+
+### Next Step
+
+**Awaiting Day 5 Phase 1 prompts based on transitions.py state.**
+
+Day 5 starts from a clean baseline:
+- Contracts locked and tested (85 tests passing)
+- State machine skeleton in place, 0 transitions registered
+- `transitions.py` does not exist yet (blank file to create)
+- `tests/transitions/` directory does not exist yet
+
+---
+
 ## Previous Steps
 
 ### 1. Frame Extraction Tool ✅
@@ -36,7 +71,7 @@ Building a YOLO-based salamander detection and tracking system.
 ---
 
 ### 3. Source Video Information ✅
-**File:** `samples/ensantina.mp4` (note: typo in filename, "ensantina" not "ensatina")
+**File:** `samples/ensatina.mp4`
 
 **Metadata:**
 - Duration: 478.67 seconds (~8 minutes)
@@ -104,7 +139,7 @@ YOLO-Sallys-Eyes/
 ├── data/
 │   └── extracted_frames/  (ready for future use)
 ├── samples/
-│   ├── ensantina.mp4      (full 8-minute source video)
+│   ├── ensatina.mp4       (full 8-minute source video)
 │   └── ensatina_short.mp4 (30-second trimmed version)
 ├── tools/
 │   ├── extract_frames.py  ✅

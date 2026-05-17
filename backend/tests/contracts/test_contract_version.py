@@ -1,9 +1,10 @@
-"""Verify contract_version literals are present and correct on every applicable model."""
+"""Verify contract_version literals are present, correct, and required on every applicable model."""
 import json
 from pathlib import Path
 from typing import get_args, get_type_hints
 
 import pytest
+from pydantic import ValidationError
 
 from salamander.contracts import (
     CONTRACT_VERSION,
@@ -20,6 +21,7 @@ from salamander.contracts import (
     MetricsWarnings,
     ProcessingMetadata,
     TrackSummary,
+    VersionedContract,
 )
 
 VERSIONED_MODELS = [FrameRecord, JobMetrics, JobRequest]
@@ -54,9 +56,17 @@ def test_contract_version_literal_value(model_cls):
 
 
 @pytest.mark.parametrize("model_cls", VERSIONED_MODELS)
-def test_contract_version_default_is_correct(model_cls):
+def test_contract_version_field_is_required(model_cls):
+    """contract_version must be required (no default) so TypeScript emits it without `?`."""
     field_info = model_cls.model_fields["contract_version"]
-    assert field_info.default == CONTRACT_VERSION
+    assert field_info.is_required(), (
+        f"{model_cls.__name__}.contract_version must have no default value"
+    )
+
+
+@pytest.mark.parametrize("model_cls", VERSIONED_MODELS)
+def test_versioned_models_inherit_versioned_contract(model_cls):
+    assert issubclass(model_cls, VersionedContract)
 
 
 @pytest.mark.parametrize("model_cls", UNVERSIONED_MODELS)

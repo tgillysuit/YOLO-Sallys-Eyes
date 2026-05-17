@@ -24,7 +24,7 @@ export interface Detection {
 }
 
 export interface FrameRecord {
-  contract_version?: "salamander.tracking.v1";
+  contract_version: "salamander.tracking.v1";
   frame_index: number;
   timestamp_s: number;
   detections: Detection[];
@@ -53,20 +53,20 @@ export interface ProcessingMetadata {
 }
 
 export interface MetricsWarnings {
-  warnings?: string[];
+  skipped_jumps?: number;
+  dropped_low_confidence?: number;
 }
 
 export interface JobMetrics {
-  contract_version?: "salamander.tracking.v1";
+  contract_version: "salamander.tracking.v1";
   video_id: string;
-  frame_records: FrameRecord[];
-  track_summaries: TrackSummary[];
-  processing_metadata: ProcessingMetadata;
+  tracks: TrackSummary[];
+  processing: ProcessingMetadata;
   metrics_warnings: MetricsWarnings;
 }
 
 export interface JobRequest {
-  contract_version?: "salamander.tracking.v1";
+  contract_version: "salamander.tracking.v1";
   video_id: string;
   device?: "auto" | "cpu" | "cuda" | "mps";
   sample_stride?: number;
@@ -86,7 +86,7 @@ export interface JobProgress {
   state: string;
   current_frame: number;
   total_frames: number;
-  pct: number;
+  percent: number;
 }
 
 export interface JobError {

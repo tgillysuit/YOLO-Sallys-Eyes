@@ -15,7 +15,35 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+__all__ = [
+    "CONTRACT_VERSION",
+    "VersionedContract",
+    "Bbox",
+    "Center",
+    "Detection",
+    "FrameRecord",
+    "TrackSummary",
+    "ProcessingMetadata",
+    "MetricsWarnings",
+    "JobMetrics",
+    "JobRequest",
+    "JobStatus",
+    "JobProgress",
+    "JobError",
+    "ErrorResponse",
+]
+
 CONTRACT_VERSION = "salamander.tracking.v1"
+
+
+class VersionedContract(BaseModel):
+    """Base for all versioned API models. contract_version is required — no default.
+
+    Every constructor call must pass contract_version=CONTRACT_VERSION explicitly.
+    The frontend version-mismatch check relies on the field always being present
+    in serialized form (TypeScript emits it as required, not optional).
+    """
+    contract_version: Literal["salamander.tracking.v1"]
 
 
 # ---------------------------------------------------------------------------
@@ -48,14 +76,13 @@ class Detection(BaseModel):
     track_id: int
     bbox: Bbox
     center: Center
-    confidence: float
+    confidence: float = Field(..., ge=0.0, le=1.0)
     class_name: str
-    frame_index: int
+    frame_index: int = Field(..., ge=0)
 
 
-class FrameRecord(BaseModel):
+class FrameRecord(VersionedContract):
     """All detections captured for one sampled frame."""
-    contract_version: Literal["salamander.tracking.v1"] = CONTRACT_VERSION
     frame_index: int
     timestamp_s: float
     detections: list[Detection]
@@ -71,42 +98,48 @@ class TrackSummary(BaseModel):
     v1.1 deferred: dwell_time_seconds field.
     """
     track_id: int
-    total_distance_px: float
+    total_distance_px: float = Field(..., ge=0.0)
     frame_indices: list[int]
-    first_seen: int
-    last_seen: int
-    detection_count: int
+    first_seen: int = Field(..., ge=0)
+    last_seen: int = Field(..., ge=0)
+    detection_count: int = Field(..., ge=0)
 
 
 class ProcessingMetadata(BaseModel):
     """Parameters and counters describing a completed processing run."""
     video_id: str
     model_path: str
-    sample_stride: int
-    confidence_threshold: float
-    iou_threshold: float
+    sample_stride: int = Field(..., ge=1)
+    confidence_threshold: float = Field(..., ge=0.0, le=1.0)
+    iou_threshold: float = Field(..., ge=0.0, le=1.0)
     device: str
-    processed_frames: int
-    total_frames: int
-    duration_s: float
-    fps: float
+    processed_frames: int = Field(..., ge=0)
+    total_frames: int = Field(..., ge=0)
+    duration_s: float = Field(..., ge=0.0)
+    fps: float = Field(..., gt=0.0)
 
 
 class MetricsWarnings(BaseModel):
-    """Non-fatal warnings accumulated during a processing run."""
-    warnings: list[str] = Field(default_factory=list)
+    """Structured counters for non-fatal quality issues in a processing run."""
+    skipped_jumps: int = Field(default=0, ge=0)
+    dropped_low_confidence: int = Field(default=0, ge=0)
 
 
-class JobMetrics(BaseModel):
-    """Full output manifest for a completed job.
+class JobMetrics(VersionedContract):
+    """Summary manifest written at job completion.
+
+    Frame-level data lives in frames.json, not here. Embedding frame_records
+    would serialize the entire detection log into this model, causing memory
+    and I/O problems on long videos.
+
+    Field names follow the spec: `tracks` (not track_summaries),
+    `processing` (not processing_metadata).
 
     v1.1 deferred: region_grid field.
     """
-    contract_version: Literal["salamander.tracking.v1"] = CONTRACT_VERSION
     video_id: str
-    frame_records: list[FrameRecord]
-    track_summaries: list[TrackSummary]
-    processing_metadata: ProcessingMetadata
+    tracks: list[TrackSummary]
+    processing: ProcessingMetadata
     metrics_warnings: MetricsWarnings
 
 
@@ -114,14 +147,13 @@ class JobMetrics(BaseModel):
 # Job lifecycle
 # ---------------------------------------------------------------------------
 
-class JobRequest(BaseModel):
+class JobRequest(VersionedContract):
     """Client-submitted parameters for a new tracking job."""
-    contract_version: Literal["salamander.tracking.v1"] = CONTRACT_VERSION
     video_id: str
     device: Literal["auto", "cpu", "cuda", "mps"] = "auto"
-    sample_stride: int = 2
-    confidence_threshold: float = 0.25
-    iou_threshold: float = 0.7
+    sample_stride: int = Field(default=2, ge=1)
+    confidence_threshold: float = Field(default=0.25, ge=0.0, le=1.0)
+    iou_threshold: float = Field(default=0.7, ge=0.0, le=1.0)
 
 
 class JobStatus(BaseModel):
@@ -136,9 +168,9 @@ class JobProgress(BaseModel):
     """Live progress snapshot while a job is in TRACKING or RENDERING."""
     job_id: str
     state: str
-    current_frame: int
-    total_frames: int
-    pct: float  # 0.0–1.0
+    current_frame: int = Field(..., ge=0)
+    total_frames: int = Field(..., ge=1)
+    percent: float = Field(..., ge=0.0, le=100.0)
 
 
 class JobError(BaseModel):

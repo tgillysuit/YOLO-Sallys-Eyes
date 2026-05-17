@@ -1,0 +1,39 @@
+# Model weights — downloaded automatically by Ultralytics
+yolo11n.pt
+yolo11*.pt
+!backend/models/salamander-yolo.pt
+
+# Spike artifacts (final spike output preserved in docs/screenshots/ if exists)
+spike_output_raw.mp4
+spike_output.mp4
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+venv/
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Node
+node_modules/
+.next/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Training data (large)
+data/extracted_frames/
+data/labels_studio_export/
