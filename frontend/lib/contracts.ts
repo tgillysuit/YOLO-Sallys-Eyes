@@ -76,14 +76,14 @@ export interface JobRequest {
 
 export interface JobStatus {
   job_id: string;
-  state: string;
+  state: "CREATED" | "QUEUED" | "INITIALIZING" | "TRACKING" | "COMPUTING" | "RENDERING" | "COMPLETE" | "FAILED";
   created_at: string;
   updated_at: string;
 }
 
 export interface JobProgress {
   job_id: string;
-  state: string;
+  state: "CREATED" | "QUEUED" | "INITIALIZING" | "TRACKING" | "COMPUTING" | "RENDERING" | "COMPLETE" | "FAILED";
   current_frame: number;
   total_frames: number;
   percent: number;
