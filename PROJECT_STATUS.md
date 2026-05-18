@@ -42,6 +42,51 @@ Day 5 starts from a clean baseline:
 
 ---
 
+## Day 5 Architectural Decisions (Locked)
+
+### FrameRecord is intentionally lean
+
+FrameRecord carries only contract_version, frame_index, timestamp_s, and detections. It does NOT duplicate video-level metadata (video_id, fps, frame_width, frame_height).
+
+Reasoning:
+- frames.json + summary.json are loaded together by the frontend; video-level metadata lives on JobMetrics.processing
+- Repeating fps across thousands of frames wastes JSON size
+- Reduces redundancy and a class of contract-drift bugs
+
+Implication for Day 6: metrics.py and the pipeline orchestrator take fps/video_id/dimensions as explicit arguments rather than reading them off individual FrameRecords.
+
+### Detection.center is a placeholder in normalization
+
+Detection.center is a required field, but normalization.py populates it as Center(x=0.0, y=0.0) and lets metrics.py overwrite it in the COMPUTING state.
+
+Reasoning:
+- Strict module ownership: vision/normalization owns shape filtering and validation; metrics owns derived geometry
+- Center is the simplest derived value, but the principle (no derived values in normalization) extends to future calculations
+- Tests verify the placeholder behavior in test_normalization.py
+
+### Test isolation pattern: reload transitions per fixture
+
+Transition tests must reload salamander.transitions inside their autouse fixture (not at module import time), because module-level imports register transitions globally and pollute TRANSITION_TABLE for tests assuming it starts empty (e.g., test_state.py::test_fire_raises_when_no_transition_registered).
+
+Pattern in each transition test file:
+
+```python
+@pytest.fixture(autouse=True)
+def reset_transition_table():
+    snapshot = dict(TRANSITION_TABLE)
+    TRANSITION_TABLE.clear()
+    import importlib
+    from salamander import transitions
+    importlib.reload(transitions)
+    yield
+    TRANSITION_TABLE.clear()
+    TRANSITION_TABLE.update(snapshot)
+```
+
+This must be replicated for every new transition test file.
+
+---
+
 ## Previous Steps
 
 ### 1. Frame Extraction Tool ✅
