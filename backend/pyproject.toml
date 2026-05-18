@@ -17,8 +17,12 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["salamander"]
+packages = ["salamander", "salamander.vision"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = ["-m", "not slow"]
+markers = [
+    "slow: tests that load the real YOLO model",
+]
