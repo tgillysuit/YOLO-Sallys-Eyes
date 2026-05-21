@@ -42,6 +42,32 @@ Day 5 starts from a clean baseline:
 
 ---
 
+## PIVOT: Restarting with course-expected structure
+
+After reviewing the course pages at https://applied-courses.kflint0068.workers.dev/applied-ai/salamander-tracker/,
+discovered that the assignment expects a simple single-file backend (~100 lines in main.py) following a
+5-step walkthrough, NOT the state-machine/contract architecture we built.
+
+DECISION: Archive the sophisticated backend on the `legacy-architecture` branch (preserved on GitHub)
+and on main under `backend/_legacy_salamander/` and `backend/_legacy_tests/`. Build the course-expected
+version fresh on main.
+
+**What we keep:**
+- The trained model (Page 02 work, still ahead)
+- `spike.py` (validated YOLO+ByteTrack+ffmpeg works on `ensatina.mp4`)
+- All learning about Pydantic, state machines, contracts (portfolio value)
+- The `legacy-architecture` branch (full sophisticated implementation, pushed to GitHub)
+
+**What we build next (course-expected):**
+- `backend/main.py`: single-file FastAPI app (Pages 03–07)
+- `frontend/`: Vite + React with upload form, video player, metrics table (Pages 03–07)
+- Custom-trained `best.pt` (Page 02)
+- README with dataset notes + color-masking-vs-YOLO comparison (Page 08)
+
+Course steps: Skeleton → Upload → YOLO → Metrics → Async/Polling → Reflect
+
+---
+
 ## Day 5 Architectural Decisions (Locked)
 
 ### FrameRecord is intentionally lean
