@@ -27,7 +27,22 @@
       "Bash(git rm *)",
       "Bash(git checkout *)",
       "Bash(git push *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(ffmpeg -version)",
+      "Bash(C:/Users/dev-t/AppData/Roaming/Python/Python312/site-packages/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v7.1.exe -i samples/ensatina.mp4 -vf fps=1/3 backend/training/captured/frame_%04d.jpg -y)",
+      "WebFetch(domain:applied-courses.kflint0068.workers.dev)",
+      "WebSearch",
+      "Bash(npm --version)",
+      "Bash(venv/Scripts/pip install *)",
+      "Bash(venv/Scripts/python *)",
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(Start-Sleep -Seconds 3)",
+      "Bash(Get-Content \"C:\\\\Users\\\\dev-t\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-dev-t-Desktop-School-2026-378-Projects-YOLO-Sallys-Eyes\\\\4062d179-390e-4036-96a2-94ed6ce460a3\\\\tasks\\\\bzf73qfma.output\" -Tail 20)",
+      "Bash(curl *)",
+      "PowerShell(Stop-Process *)"
     ],
     "deny": [],
     "ask": []

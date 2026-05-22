@@ -37,3 +37,13 @@ Thumbs.db
 # Training data (large)
 data/extracted_frames/
 data/labels_studio_export/
+
+# Training artifacts (captured frames, split dataset, YOLO run output)
+# NOTE: backend/best.pt is NOT ignored — that's the committed deliverable
+backend/training/captured/
+backend/training/dataset/
+backend/training/project-*/
+runs/
+
+# Runtime upload directory — created automatically by the app
+backend/videos/
