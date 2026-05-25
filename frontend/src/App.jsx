@@ -1,22 +1,49 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 function App() {
   const [file, setFile] = useState(null)
   const [data, setData] = useState(null)
   const [processing, setProcessing] = useState(false)
+  const [percent, setPercent] = useState(0)
+  const [error, setError] = useState(null)
+  const pollRef = useRef(null)
+
+  function stopPolling() {
+    if (pollRef.current) {
+      clearInterval(pollRef.current)
+      pollRef.current = null
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setProcessing(true)
     setData(null)
-    try {
-      const form = new FormData()
-      form.append('video', file)
-      const res = await fetch('http://localhost:8000/track', { method: 'POST', body: form })
-      setData(await res.json())
-    } finally {
-      setProcessing(false)
-    }
+    setError(null)
+    setPercent(0)
+
+    const form = new FormData()
+    form.append('video', file)
+    await fetch('http://localhost:8000/track', { method: 'POST', body: form })
+
+    // Poll GET /track every 1.5 s until done or error
+    pollRef.current = setInterval(async () => {
+      const res = await fetch('http://localhost:8000/track')
+      const job = await res.json()
+
+      if (job.status === 'done') {
+        stopPolling()
+        setPercent(100)
+        setData(job.result)
+        setProcessing(false)
+      } else if (job.status === 'error') {
+        stopPolling()
+        setError(job.message)
+        setProcessing(false)
+      } else {
+        setPercent(job.percent ?? 0)
+      }
+    }, 1500)
   }
 
   return (
@@ -27,7 +54,13 @@ function App() {
           {processing ? 'Processing...' : 'Upload'}
         </button>
       </form>
-      {processing && <p>Processing video — this takes 30–60 seconds…</p>}
+      {processing && (
+        <>
+          <p>Processing video — this takes 30–60 seconds…</p>
+          <progress value={percent} max={100} />
+        </>
+      )}
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
       {data && <video src={data.video_url} controls />}
       {data?.tracks?.length > 0 && (
         <table>
