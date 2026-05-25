@@ -1,3 +1,4 @@
+import math
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -52,6 +53,8 @@ def run_track_job():
         # Per-track metrics accumulators
         frames_seen = defaultdict(int)
         label_for = {}
+        last_center = {}          # track_id -> (cx, cy) of previous frame
+        distance_px = defaultdict(float)  # track_id -> total pixels traveled
 
         # Frame loop
         for frame_idx in range(total):
@@ -66,9 +69,22 @@ def run_track_job():
 
             boxes = result.boxes
             if boxes is not None and boxes.id is not None:
-                for tid, cls_id in zip(boxes.id.tolist(), boxes.cls.tolist()):
-                    frames_seen[int(tid)] += 1
-                    label_for[int(tid)] = model.names[int(cls_id)]
+                for tid, cls_id, xyxy in zip(
+                    boxes.id.tolist(), boxes.cls.tolist(), boxes.xyxy.tolist()
+                ):
+                    tid = int(tid)
+                    frames_seen[tid] += 1
+                    label_for[tid] = model.names[int(cls_id)]
+
+                    # Distance tracking: center of bounding box
+                    x1, y1, x2, y2 = xyxy
+                    cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+                    if tid in last_center:
+                        last_cx, last_cy = last_center[tid]
+                        dist = math.hypot(cx - last_cx, cy - last_cy)
+                        if dist <= 200:  # ignore jumps — likely tracking errors
+                            distance_px[tid] += dist
+                    last_center[tid] = (cx, cy)
 
         cap.release()
         writer.release()
@@ -76,10 +92,11 @@ def run_track_job():
         tracks = [
             {
                 "track_id": tid,
-                "time_on_screen_s": round(count / fps, 2),
+                "time_on_screen_s": round(frames_seen[tid] / fps, 2),
+                "distance_px": round(distance_px[tid], 1),
                 "label": label_for[tid],
             }
-            for tid, count in frames_seen.items()
+            for tid in frames_seen
         ]
 
         job.clear()

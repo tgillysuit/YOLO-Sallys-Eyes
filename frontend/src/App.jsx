@@ -69,6 +69,7 @@ function App() {
               <th>Track ID</th>
               <th>Label</th>
               <th>Time on Screen (s)</th>
+              <th>Distance (px)</th>
             </tr>
           </thead>
           <tbody>
@@ -77,6 +78,7 @@ function App() {
                 <td>{t.track_id}</td>
                 <td>{t.label}</td>
                 <td>{t.time_on_screen_s}</td>
+                <td>{t.distance_px}</td>
               </tr>
             ))}
           </tbody>
