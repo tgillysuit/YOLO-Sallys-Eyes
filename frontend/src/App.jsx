@@ -29,6 +29,26 @@ function App() {
       </form>
       {processing && <p>Processing video — this takes 30–60 seconds…</p>}
       {data && <video src={data.video_url} controls />}
+      {data?.tracks?.length > 0 && (
+        <table>
+          <thead>
+            <tr>
+              <th>Track ID</th>
+              <th>Label</th>
+              <th>Time on Screen (s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.tracks.map((t) => (
+              <tr key={t.track_id}>
+                <td>{t.track_id}</td>
+                <td>{t.label}</td>
+                <td>{t.time_on_screen_s}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   )
 }

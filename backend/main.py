@@ -1,4 +1,5 @@
 import time
+from collections import defaultdict
 from pathlib import Path
 
 import cv2
@@ -52,6 +53,10 @@ async def track(video: UploadFile = File(...)):
         (width, height),
     )
 
+    # Per-track metrics accumulators
+    frames_seen = defaultdict(int)
+    label_for = {}
+
     # Frame loop
     for frame_idx in range(total):
         ok, frame = cap.read()
@@ -62,12 +67,28 @@ async def track(video: UploadFile = File(...)):
         if frame_idx % 30 == 0:
             print(f"frame {frame_idx}/{total}")
 
+        boxes = result.boxes
+        if boxes is not None and boxes.id is not None:
+            for tid, cls_id in zip(boxes.id.tolist(), boxes.cls.tolist()):
+                frames_seen[int(tid)] += 1
+                label_for[int(tid)] = model.names[int(cls_id)]
+
     cap.release()
     writer.release()
+
+    tracks = [
+        {
+            "track_id": tid,
+            "time_on_screen_s": round(count / fps, 2),
+            "label": label_for[tid],
+        }
+        for tid, count in frames_seen.items()
+    ]
 
     return {
         "status": "done",
         "video_url": f"http://localhost:8000/videos/output.mp4?t={int(time.time())}",
+        "tracks": tracks,
     }
 
 
