@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 function App() {
   const [file, setFile] = useState(null)
@@ -15,18 +15,8 @@ function App() {
     }
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setProcessing(true)
-    setData(null)
-    setError(null)
-    setPercent(0)
-
-    const form = new FormData()
-    form.append('video', file)
-    await fetch('http://localhost:8000/track', { method: 'POST', body: form })
-
-    // Poll GET /track every 1.5 s until done or error
+  const startPolling = useCallback(() => {
+    stopPolling()
     pollRef.current = setInterval(async () => {
       const res = await fetch('http://localhost:8000/track')
       const job = await res.json()
@@ -44,6 +34,37 @@ function App() {
         setPercent(job.percent ?? 0)
       }
     }, 1500)
+  }, [])
+
+  // On mount: if the backend is already processing (e.g. after a page refresh),
+  // re-attach the polling loop so the progress bar picks up where it left off.
+  useEffect(() => {
+    fetch('http://localhost:8000/track')
+      .then((r) => r.json())
+      .then((job) => {
+        if (job.status === 'processing') {
+          setProcessing(true)
+          setPercent(job.percent ?? 0)
+          startPolling()
+        }
+      })
+      .catch(() => {}) // backend not up yet — ignore
+
+    return () => stopPolling()
+  }, [startPolling])
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setProcessing(true)
+    setData(null)
+    setError(null)
+    setPercent(0)
+
+    const form = new FormData()
+    form.append('video', file)
+    await fetch('http://localhost:8000/track', { method: 'POST', body: form })
+
+    startPolling()
   }
 
   return (

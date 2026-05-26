@@ -28,13 +28,15 @@ app.mount("/videos", StaticFiles(directory=str(VIDEOS_DIR)), name="videos")
 model = YOLO("best.pt")
 
 job = {"status": "idle"}
+cancel_job = False   # set True to signal the running thread to stop early
 
 
 def run_track_job():
+    global cancel_job
     try:
         input_path = VIDEOS_DIR / "input.mp4"
 
-        # FIX 2: Reset ByteTrack state so track IDs restart from 1 each upload
+        # Reset ByteTrack state so track IDs restart from 1 each upload
         if hasattr(model, "predictor") and model.predictor is not None:
             model.predictor = None
 
@@ -64,8 +66,14 @@ def run_track_job():
         first_frame = {}          # track_id -> frame index first seen
         last_frame = {}           # track_id -> frame index last seen
 
-        # Frame loop — FIX 3: raise conf to 0.4 to reduce false positives
+        # Frame loop
         for frame_idx in range(total):
+            if cancel_job:
+                print("Job cancelled — new upload received.", flush=True)
+                cap.release()
+                writer.release()
+                return  # exit silently; the new thread owns job from here
+
             ok, frame = cap.read()
             if not ok:
                 break
@@ -100,7 +108,7 @@ def run_track_job():
         cap.release()
         writer.release()
 
-        # FIX 1: Transcode mp4v -> H.264 so browsers can play it natively
+        # Transcode mp4v -> H.264 so browsers can play it natively
         print("Transcoding to H.264...", flush=True)
         subprocess.run(
             [
@@ -114,7 +122,7 @@ def run_track_job():
             check=True,
             capture_output=True,
         )
-        raw_path.unlink(missing_ok=True)  # clean up the intermediate file
+        raw_path.unlink(missing_ok=True)
         print("Transcode done.", flush=True)
 
         tracks = [
@@ -151,6 +159,12 @@ def root():
 
 @app.post("/track")
 def start_track(video: UploadFile = File(...)):
+    global cancel_job
+    # Signal any running thread to stop, then take ownership of job state
+    cancel_job = True
+    time.sleep(0.05)   # one frame budget — enough for the loop to notice
+    cancel_job = False
+
     (VIDEOS_DIR / "input.mp4").write_bytes(video.file.read())
     job.clear()
     job["status"] = "processing"
