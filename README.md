@@ -85,6 +85,7 @@ YOLO handles these harder cases because it learns spatial features — shape, te
 ## Known Limitations
 
 - **Single-video training data** — the model is tuned to one recording's conditions; generalization to new environments is untested
+- **No negative training examples** — every training frame contained a salamander; the model never learned what to *reject*. On out-of-domain footage (memes, text, unrelated animals) it can confidently misfire on anything with similar low-level edge and contrast patterns — bold text, elongated objects, high-contrast shapes. The fix is hard negative mining: adding labeled frames of non-salamander content so the model learns the boundary between "salamander" and "everything else"
 - **Distance in pixels only** — `distance_px` has no real-world calibration. Converting to cm/m would require a known reference object (e.g. a ruler) in frame to establish a px-per-mm ratio
 - **One job at a time** — submitting a new video while one is processing overwrites the previous job; a job queue would be needed for concurrent use
 - **Track ID swaps** — when two salamanders cross or overlap, ByteTrack can occasionally swap their IDs for a few frames before recovering
