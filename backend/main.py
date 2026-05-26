@@ -1,4 +1,5 @@
 import math
+import subprocess
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -33,6 +34,10 @@ def run_track_job():
     try:
         input_path = VIDEOS_DIR / "input.mp4"
 
+        # FIX 2: Reset ByteTrack state so track IDs restart from 1 each upload
+        if hasattr(model, "predictor") and model.predictor is not None:
+            model.predictor = None
+
         # Read video metadata
         cap = cv2.VideoCapture(str(input_path))
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -41,10 +46,11 @@ def run_track_job():
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         print(f"fps={fps} dims={width}x{height} frames={total}", flush=True)
 
-        # Set up output writer
+        # Write mp4v to a temp file, then transcode to H.264 for browser playback
+        raw_path = VIDEOS_DIR / "output_raw.mp4"
         output_path = VIDEOS_DIR / "output.mp4"
         writer = cv2.VideoWriter(
-            str(output_path),
+            str(raw_path),
             cv2.VideoWriter_fourcc(*"mp4v"),
             fps,
             (width, height),
@@ -56,12 +62,12 @@ def run_track_job():
         last_center = {}          # track_id -> (cx, cy) of previous frame
         distance_px = defaultdict(float)  # track_id -> total pixels traveled
 
-        # Frame loop
+        # Frame loop — FIX 3: raise conf to 0.4 to reduce false positives
         for frame_idx in range(total):
             ok, frame = cap.read()
             if not ok:
                 break
-            result = model.track(frame, persist=True, verbose=False)[0]
+            result = model.track(frame, persist=True, verbose=False, conf=0.4)[0]
             writer.write(result.plot())
             job["percent"] = int((frame_idx + 1) / total * 100)
             if frame_idx % 30 == 0:
@@ -88,6 +94,23 @@ def run_track_job():
 
         cap.release()
         writer.release()
+
+        # FIX 1: Transcode mp4v -> H.264 so browsers can play it natively
+        print("Transcoding to H.264...", flush=True)
+        subprocess.run(
+            [
+                "ffmpeg", "-y",
+                "-i", str(raw_path),
+                "-c:v", "libx264",
+                "-preset", "fast",
+                "-movflags", "+faststart",
+                str(output_path),
+            ],
+            check=True,
+            capture_output=True,
+        )
+        raw_path.unlink(missing_ok=True)  # clean up the intermediate file
+        print("Transcode done.", flush=True)
 
         tracks = [
             {
