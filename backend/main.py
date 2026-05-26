@@ -61,6 +61,8 @@ def run_track_job():
         label_for = {}
         last_center = {}          # track_id -> (cx, cy) of previous frame
         distance_px = defaultdict(float)  # track_id -> total pixels traveled
+        first_frame = {}          # track_id -> frame index first seen
+        last_frame = {}           # track_id -> frame index last seen
 
         # Frame loop — FIX 3: raise conf to 0.4 to reduce false positives
         for frame_idx in range(total):
@@ -81,6 +83,9 @@ def run_track_job():
                     tid = int(tid)
                     frames_seen[tid] += 1
                     label_for[tid] = model.names[int(cls_id)]
+                    if tid not in first_frame:
+                        first_frame[tid] = frame_idx
+                    last_frame[tid] = frame_idx
 
                     # Distance tracking: center of bounding box
                     x1, y1, x2, y2 = xyxy
@@ -115,9 +120,11 @@ def run_track_job():
         tracks = [
             {
                 "track_id": tid,
+                "label": label_for[tid],
+                "first_seen_s": round(first_frame[tid] / fps, 2),
+                "last_seen_s": round(last_frame[tid] / fps, 2),
                 "time_on_screen_s": round(frames_seen[tid] / fps, 2),
                 "distance_px": round(distance_px[tid], 1),
-                "label": label_for[tid],
             }
             for tid in frames_seen
         ]

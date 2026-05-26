@@ -68,6 +68,8 @@ function App() {
             <tr>
               <th>Track ID</th>
               <th>Label</th>
+              <th>First Seen (s)</th>
+              <th>Last Seen (s)</th>
               <th>Time on Screen (s)</th>
               <th>Distance (px)</th>
             </tr>
@@ -77,6 +79,8 @@ function App() {
               <tr key={t.track_id}>
                 <td>{t.track_id}</td>
                 <td>{t.label}</td>
+                <td>{t.first_seen_s}</td>
+                <td>{t.last_seen_s}</td>
                 <td>{t.time_on_screen_s}</td>
                 <td>{t.distance_px}</td>
               </tr>
